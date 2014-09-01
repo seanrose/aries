@@ -11,7 +11,7 @@ function populateRelationships(userId, friends) {
 Meteor.methods({
     importFollowings: function() {
         var twitter = new Twitter();
-        var friends = twitter.friends.list().data.users;
+        var friends = twitter.friends.list( {count: 200} ).data.users;
         var userId = Meteor.user().services.twitter.id;
 
         // Populate relationships for the logged in user
@@ -20,12 +20,12 @@ Meteor.methods({
         // Populate relationships for the logged in user's follows
         _.each(friends, function(friend, index) {
             var friendId = friend.id_str;
-            var friendsOfFriends = twitter.friends.list( {id: friendId} ).data.ids;
 
             console.log(index);
 
-            var delay = (index + 1) * 75000;
+            var delay = (index + 1) * 65000;
             Meteor.setTimeout(function() {
+                var friendsOfFriends = twitter.friends.list( {id: friendId} ).data.ids;
                 populateRelationships(friendId, friendsOfFriends);
             }, delay);
         });
