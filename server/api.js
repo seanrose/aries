@@ -8,26 +8,29 @@ function populateRelationships(userId, friends) {
     });
 }
 
+function populateFriendRelationships(userId, friends, twitter) {
+    _.each(friends, function(friend, index) {
+        var friendId = friend.id_str;
+
+        var delay = (index + 1) * 65000;
+        Meteor.setTimeout(function() {
+            var friendsOfFriends = twitter.friends.list( {id: friendId, count:200} ).data.users;
+            populateRelationships(friendId, friendsOfFriends);
+        }, delay);
+    });
+}
+
 Meteor.methods({
     importFollowings: function() {
         var twitter = new Twitter();
+        // TODO(seanrose): handle pagination somehow
         var friends = twitter.friends.list( {count: 200} ).data.users;
         var userId = Meteor.user().services.twitter.id;
 
         // Populate relationships for the logged in user
         populateRelationships(userId, friends);
-
         // Populate relationships for the logged in user's follows
-        _.each(friends, function(friend, index) {
-            var friendId = friend.id_str;
+        populateFriendRelationships(userId, friends, twitter);
 
-            console.log(index);
-
-            var delay = (index + 1) * 65000;
-            Meteor.setTimeout(function() {
-                var friendsOfFriends = twitter.friends.list( {id: friendId} ).data.ids;
-                populateRelationships(friendId, friendsOfFriends);
-            }, delay);
-        });
     }
 });

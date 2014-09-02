@@ -27,28 +27,6 @@ function createOauthBinding() {
     return oauthBinding;
 }
 
-/**
- * Makes an OAuth 1 signed HTTP request
- * @param  {String} method the HTTP method
- * @param  {String} url    the URL
- * @param  {Object} params an object of params to send in the request as query or body params
- * @return {object}        an HTTP response object
- */
-// TODO(seanrose): make this an instance method perhaps
-function request(method, url, params, oauth) {
-
-    try {
-        result = oauth.call(method, url, params);
-    } catch (e) {
-        if (e.response.statusCode === 429) {
-            console.log(e.response.headers);
-        }
-        throw 'fuuuuuuu';
-    }
-
-    return result;
-}
-
 Twitter = function() {
     var client = this;
 
@@ -56,6 +34,26 @@ Twitter = function() {
     this.friends_url = FRIENDS_URL;
     this.users_url = USERS_URL;
     this.profile_url = PROFILE_BASE;
+
+    /**
+     * Makes an OAuth 1 signed HTTP request
+     * @param  {String} method the HTTP method
+     * @param  {String} url    the URL
+     * @param  {Object} params an object of params to send in the request as query or body params
+     * @return {object}        an HTTP response object
+     */
+    this.request = function(method, url, params) {
+        try {
+            result = client.oauth.call(method, url, params);
+            return result;
+        } catch (e) {
+            if (e.response.statusCode === 429) {
+                console.log(e.response.headers);
+            }
+            throw 'fuuuuuuu';
+        }
+    };
+
 
     this.friends = {
 
@@ -67,13 +65,13 @@ Twitter = function() {
         ids: function(options) {
             options = options || {};
 
-            if (!_.has(options, 'id') && !_.has(options, 'username') ) {
+            if (!_.has(options, 'id') && !_.has(options, 'screen_name') ) {
                 options.id = Meteor.user().services.twitter.id;
             }
 
             var url = client.friends_url + '/ids.json';
 
-            return request('GET', url, options, client.oauth);
+            return client.request('GET', url, options, client.oauth);
         },
 
         /**
@@ -84,13 +82,13 @@ Twitter = function() {
         list: function(options) {
             options = options || {};
 
-            if (!_.has(options, 'id') && !_.has(options, 'username') ) {
+            if (!_.has(options, 'id') && !_.has(options, 'screen_name') ) {
                 options.id = Meteor.user().services.twitter.id;
             }
 
             var url = client.friends_url + '/list.json';
 
-            return request('GET', url, options, client.oauth);
+            return client.request('GET', url, options, client.oauth);
         }
     };
 
@@ -113,7 +111,7 @@ Twitter = function() {
 
             url = client.users_url + '/lookup.json';
 
-            return request('GET', url, params, client.oauth);
+            return client.request('GET', url, params, client.oauth);
 
         },
 
