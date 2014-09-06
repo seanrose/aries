@@ -12,7 +12,8 @@ function populateFriendRelationships(userId, friends, twitter) {
     _.each(friends, function(friend, index) {
         var friendId = friend.id_str;
 
-        var delay = (index + 1) * 65000;
+
+        var delay = (index + 1) * 65000; // Have to do these in 1 minute intervals because fuck the Twitter API
         Meteor.setTimeout(function() {
             var friendsOfFriends = twitter.friends.list( {id: friendId, count:200} ).data.users;
             populateRelationships(friendId, friendsOfFriends);
