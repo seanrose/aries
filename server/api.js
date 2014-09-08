@@ -1,3 +1,10 @@
+/**
+ * Given a Twitter userId, creates a following entry
+ * for every userId this user follows
+ * @param  {String} userId  The Twitter user ID
+ * @param  {Array} friends An array of Twitter user objects
+ * @return
+ */
 function populateRelationships(userId, friends) {
     console.log('##########\nPopulating for: ' + userId +'\n##########\n');
     _.each(friends, function(friend) {
@@ -19,6 +26,10 @@ function populateFriendRelationships(userId, friends, twitter) {
             populateRelationships(friendId, friendsOfFriends);
         }, delay);
     });
+}
+
+function scoreRelationships(userId) {
+
 }
 
 Meteor.methods({
