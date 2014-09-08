@@ -29,7 +29,32 @@ function populateFriendRelationships(userId, friends, twitter) {
 }
 
 function scoreRelationships(userId) {
+    var follows = Followings.find({followedBy: userId}, {
+        fields: {follow: 1}
+    }).fetch();
 
+    var followIds = _.pluck(follows, 'follow');
+
+    var secondDegreeFollows = Followings.find( {followedBy: {$in: followIds}}, {
+        fields: { follow: 1 }
+    });
+
+
+    var secondDegreeFollowCounts = {};
+
+    secondDegreeFollows.forEach(function(following) {
+        if (!_.has(secondDegreeFollowCounts, following.follow)) {
+            secondDegreeFollowCounts[following.follow] = {id: following.follow, count: 1};
+        } else {
+            secondDegreeFollowCounts[following.follow].count += 1;
+        }
+    });
+
+    var scored = _.sortBy(secondDegreeFollowCounts, function(val, key, object) {
+        return val.count;
+    });
+
+    return scored;
 }
 
 Meteor.methods({
