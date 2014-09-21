@@ -39,6 +39,8 @@ function populateFriendRelationships(userId, friendIds, twitter) {
  * @param  {String} userId A Twitter User ID
  * @return {Array}        A sorted array
  */
+
+// TODO: write to db instead of returning results
 function scoreRelationships(userId) {
     var follows = Followings.find({followedBy: userId}, {
         fields: {follow: 1}
@@ -53,6 +55,7 @@ function scoreRelationships(userId) {
 
     var secondDegreeFollowCounts = {};
 
+    // TODO: use db for increment instead
     secondDegreeFollows.forEach(function(following) {
         if (!_.has(secondDegreeFollowCounts, following.follow)) {
             secondDegreeFollowCounts[following.follow] = {id: following.follow, count: 1};
@@ -61,11 +64,12 @@ function scoreRelationships(userId) {
         }
     });
 
-    var scored = _.sortBy(secondDegreeFollowCounts, function(val, key, object) {
-        return val.count;
+    _.each(secondDegreeFollowCounts, function(secondDegreeFollow) {
+        SecondDegreeFollowings.upsert(
+            { userId: userId, secondDegreeFollowId: secondDegreeFollow.id },
+            { $set: { count: secondDegreeFollow.count } }
+        );
     });
-
-    return scored;
 }
 
 Meteor.methods({
@@ -83,4 +87,4 @@ Meteor.methods({
     }
 });
 
-console.log(scoreRelationships('17797951'));
+scoreRelationships('17797951');
